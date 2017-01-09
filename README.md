@@ -47,29 +47,30 @@ When comparing my implementation to lazy sort and the built-in `sorted` function
 
 <a href="images/sort_results1.png" title="Finding top 10 in a list of integers" width="200" height="150"><img src="images/sort_results1.png" alt="Triangle"></a>
 
-If we remove `lazysort` from the chart, we can clearly see that my generator-based quicksort can indeed a bit faster than the built-in `sorted` function, if we only need the first 10 items.
+The chart is dominated by `lazysort`, obscuring the fact that partial quicksort is indeed faster than the built-in `sorted`.
+
+**Update** [/u/imps-p0155](https://www.reddit.com/user/imps-p0155) mentioned in his [comment](https://www.reddit.com/r/Python/comments/5mqvqb/lazy_sorting_in_python/dc5pk6n/) that using `heapq.heapify` would provide even better performance. He's absolutely right:
 
 <a href="images/sort_results2.png" title="Finding top 10 in a list of integers" width="200" height="150"><img src="images/sort_results2.png"></a>
+
 
 Further Analysis
 ================
 
-Now that we know we can beat `sorted`, let's see why this is. A lazy sorting algorithm only has benefit when it can decide not to do some work. In quicksort's case, not having to sort the right partition severaltimes in a row is a huge benefit. But where's the cut-off when sorting items?
+Now that we know we can beat `sorted`, let's see why this is. A lazy sorting algorithm only has benefit when it can decide not to do some work. In quicksort's case, not having to sort the right partition several times in a row is a huge benefit. But where's the cut-off when sorting items?
 
 <a href="images/sort_results3.png" title="Finding top 10 in a list of integers" width="200" height="150"><img src="images/sort_results3.png"></a>
 
-That's disapointing. If you just need the first few percent, lazy `quicksort` can help you out, but beyond that, you're probably better off sorting the entire list.
+If you just need the first few percent, lazy `quicksort` can help out, but it has nothing on using `heapq`, which breaks even at ~45%, and has a worst case (100% iteration) premium of only 200% over `sorted`. **Conclusion**: while partial quicksort is an interesting gimmick, it has no added value over `heapq`.
 
 Possible performance improvements
 =================================
 
-IMHO, first course of action would be to port this code to C; that's where performant low-level code lives; and that's were our benchmark `sorted` is implemented. This code can benefit significantly from pointer arithmatic, which is not an option in Python.
-
-The algorithm itself can also be improved. Quicksort is known to be highly performant on large lists, but have poor performance on short lists. Quicksort could internally fall back to (e.g.) mergesort or bubblesort for short lists. This could make sorting the inner lists a bit faster. Also, one needn't use Python's call stack for recursion, a lighter structure may yield better performance, too.
+I'm doubtful optimization of `quicksort` will make it compete with `heapq`. Partial `quicksort`'s best case (only retrieving one item) still requires performing `log(n)` partitions; *O(n log(log(n))* performance, and it's worst case (retrieving all items) is still *O(n log(n))*. The `heapq` based solution has a generalized performance of *O(n + m log(n))*, which is always better than `quicksort`.
 
 Possible feature improvements
 =============================
 
 Currently support for `sorted`'s `key` and `reverse` parameters is lacking, but those are trivial to add.
 
-Lazy Quicksort could fake an list-like interface. The current implementation only sorts the head, but the priciple applies to any part of the sorted list. This coult speed up computation of median values, and percentiles.
+Lazy Quicksort could fake an list-like interface. The current implementation only sorts the head, but the principle applies to any part of the sorted list. This is something you can't achieve with heapq, which can only operate at the end of the lists. This could speed up computation of median values, and percentiles, although with my test data, it will probably only outperform `heapq` for the 45-55 percentile, which is a really narrow niche.

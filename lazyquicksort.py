@@ -7,6 +7,7 @@ from lazy_sort.merge_sort import merge_sort
 from lazy_sort.boramalper import lazysort
 from lazy_sort.quick_sort import quicksort, quicksort_flat, quicksort_hybrid
 from lazy_sort.insertion_sort import insertion_sort
+from lazy_sort.heap import heap_sort, heap_sort_batch
 
 
 def take(iterable, n):
@@ -36,13 +37,15 @@ def benchmark_one(sort_fn, size, fraction, ints, verify=False):
 
 def do_benchmark():
     functions = [
-        quicksort_flat,
-        quicksort_hybrid,
+        # quicksort_flat,
+        # quicksort_hybrid,
         quicksort,
-        lazysort,
+        heap_sort,
+        # heap_sort_batch,
+        # lazysort,
         sorted,
-        insertion_sort,
-        merge_sort,
+        # insertion_sort,
+        # merge_sort,
     ]
 
     r = random.Random(0)
@@ -114,6 +117,8 @@ def do_detail_analysis():
         # quicksort_flat,
         # quicksort_hybrid,
         quicksort,
+        heap_sort,
+        # heap_sort_batch,
         # lazysort,
         sorted,
         # insertion_sort,
